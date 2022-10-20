@@ -16,43 +16,43 @@ TFT_eSPI tft = TFT_eSPI();
 
 #define TFT_GREY 0x7BEF
 
+enum class PointID { NONE = -1, A, B, C, COUNT };
+
 //Calibration - needs to be fixed to calibrate properly
-#define VERIFY_CALIBRATION
+// source points used for calibration
+//static TS_Point _screenPoint[] = {
+//  TS_Point(30, 40), // point A
+//  TS_Point(304, 29), // point B
+//  TS_Point(33, 222)  // point C
+//};
+//
+//// touchscreen points used for calibration verification
+//static TS_Point _touchPoint[] = {
+//  TS_Point(3667, 3355), // point A
+//  TS_Point(405, 3519), // point B
+//  TS_Point(3635, 611), // point C
+//};
+
 static TS_Point _screenPoint[] = {
-  TS_Point(13,  11), // point A
-  TS_Point(312, 113), // point B
-  TS_Point(167, 214)  // point C
+  TS_Point(214, 74), // point A
+  TS_Point(446, 110), // point B
+  TS_Point(39, 309)  // point C
 };
 
+// touchscreen points used for calibration verification
 static TS_Point _touchPoint[] = {
-  TS_Point(3795, 3735), // point A
-  TS_Point(482, 2200), // point B
-  TS_Point(2084,  583), // point C
+  TS_Point(2324, 3128), // point A
+  TS_Point(481, 2712), // point B
+  TS_Point(3718, 468), // point C
 };
 
 static TS_Calibration cal(
-  _screenPoint[0], _touchPoint[0],
-  _screenPoint[1], _touchPoint[1],
-  _screenPoint[2], _touchPoint[2],
+  _screenPoint[(int)PointID::A], _touchPoint[(int)PointID::A],
+  _screenPoint[(int)PointID::B], _touchPoint[(int)PointID::B],
+  _screenPoint[(int)PointID::C], _touchPoint[(int)PointID::C],
   WIDTH,
   HEIGHT
 );
-
-void setup()
-{
-  randomSeed(analogRead(0));
-  Serial.begin(115200);
-
-  ts.begin();
-  ts.setRotation(ROTATION);
-  ts.calibrate(cal);
-
-  // Setup the LCD
-  tft.init();
-  tft.setRotation(ROTATION);
-
-  drawKeyboard();
-}
 
 String keyboard_lower[][10] = {
   (String[10]) {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
@@ -95,9 +95,30 @@ void drawKeyboard() {
   }
 }
 
+void setup()
+{
+  randomSeed(analogRead(0));
+  Serial.begin(115200);
+
+  // Setup the LCD
+  tft.init();
+  tft.setRotation(ROTATION);
+
+  ts.begin();
+  ts.setRotation(ROTATION);
+  ts.calibrate(cal);
+
+  //drawKeyboard();
+}
+
 void loop() {
   if (ts.touched()) {
-    isUppercase = !isUppercase;
-    drawKeyboard();
+    TS_Point p = ts.getPoint();
+    Serial.print(p.x);
+    Serial.print(", ");
+    Serial.println(p.y);
+
+    //isUppercase = !isUppercase;
+    //drawKeyboard();
   }
 }
